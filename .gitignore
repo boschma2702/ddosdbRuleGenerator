@@ -51,3 +51,5 @@ pip-delete-this-directory.txt
 .idea/
 pcap_files/
 *.pcap
+results-attacker.txt
+results-ids.txt

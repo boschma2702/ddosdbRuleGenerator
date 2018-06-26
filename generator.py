@@ -1,8 +1,5 @@
 import json
 
-add_src_ip = True
-add_dst_ports = True
-add_src_ports = True
 pretty_print = True
 
 
@@ -10,19 +7,17 @@ def write_rule(rule_name, data):
     rule = ["signature {} {{".format(rule_name)]
     protocol = data["protocol"]
 
+    add_src_ip = True
+    add_dst_ports = True
+    add_src_ports = True
+
     if pretty_print: rule.append("\n")
 
-    if add_src_ip:
-        add_to_str(rule, write_src_ips(data["src_ips"]))
-
-    if add_src_ports:
-        add_to_str(rule, write_src_ports(data["src_ports"]))
-
-    if add_dst_ports:
-        add_to_str(rule, write_dst_ports(data["dst_ports"]))
 
     if protocol == "ICMP":
         add_to_str(rule, write_icmp_type(int(float(data["additional"]["icmp_type"].split(",")[0]))))
+        add_dst_ports = False
+        add_src_ports = False
         pass
     elif protocol == "NTP":
         pass
@@ -33,6 +28,23 @@ def write_rule(rule_name, data):
     elif protocol == "DNS":
         add_to_str(rule, write_dns_query(data["additional"]["dns_query"]))
         pass
+    elif protocol == "IPv4":
+        pass
+
+
+    if add_src_ip:
+        add_to_str(rule, write_src_ips(data["src_ips"]))
+
+    if add_src_ports:
+        add_to_str(rule, write_src_ports(data["src_ports"]))
+
+    if add_dst_ports:
+        add_to_str(rule, write_dst_ports(data["dst_ports"]))
+
+
+
+    rule.append("\tevent \"{}\"".format(rule_name))
+    if pretty_print: rule.append("\n")
 
     rule.append("}")
 
@@ -59,8 +71,8 @@ def write_src_ports(ports: list):
     if len(ports) > 0:
         s = str(int(ports[0]))
         for i in range(1, len(ports)-1):
-            s += str(int(ports[i]))
-        return "src-ports == {}".format(s)
+            s += ", "+str(int(ports[i]))
+        return "src-port == {}".format(s)
     return ""
 
 
@@ -69,12 +81,12 @@ def write_dst_ports(ports: list):
         s = str(int(ports[0]))
         for i in range(1, len(ports)-1):
             s += ", "+str(int(ports[i]))
-        return "dst-ports == {}".format(s)
+        return "dst-port == {}".format(s)
     return ""
 
 
 def write_dns_query(query: str):
-    return "payload /{} /".format(query.replace(".", "\."))
+    return "payload /.*{}/".format(query)
 
 
 def write_icmp_type(t: int):
@@ -89,6 +101,12 @@ def add_to_str(rule: list, to_add:str):
             rule.append(to_add)
 
 
-with open('json_files/072a16f4c24332ec1dbbc8ea6df36087.json') as data_file:
-    d = json.load(data_file)
-    print(write_rule("test", d))
+def generate_signature(filename, file):
+    json_file = json.load(file)
+    rule_name = "STOP"+filename[:4]
+    with open("sig.sig", "w") as sig_file:
+        rule = write_rule(rule_name, json_file)
+        sig_file.write(rule)
+
+if __name__ == '__main__':
+    generate_signature("d27fba341533dadddccb7af7a39ab450.json", open("json_files/d27fba341533dadddccb7af7a39ab450.json"))
