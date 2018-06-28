@@ -1,4 +1,5 @@
 import json
+import os
 
 pretty_print = True
 
@@ -24,11 +25,14 @@ def write_rule(rule_name, data):
     elif protocol == "UDP":
         pass
     elif protocol == "TCP":
+        add_to_str(rule, write_tcp_flags(data["additional"]["tcp_flag"]))
         pass
     elif protocol == "DNS":
         add_to_str(rule, write_dns_query(data["additional"]["dns_query"]))
         pass
     elif protocol == "IPv4":
+        pass
+    elif protocol == "Chargen":
         pass
 
 
@@ -93,6 +97,21 @@ def write_icmp_type(t: int):
     return "header icmp[0:1] == {}".format(str(t))
 
 
+def write_tcp_flags(t: str):
+    """
+    This only works when the last bit of the reserved field of tcp and the ECN-nonce flag are set to 0
+    """
+    flags = t[4:]
+    bin_flags = ""
+    for c in flags:
+        if c == "·":
+            bin_flags += "0"
+        else:
+            bin_flags += "1"
+    # print(bin_flags)
+    return "header tcp[13:1] == {}".format(str(int(bin_flags, 2)))
+
+
 def add_to_str(rule: list, to_add:str):
     if not to_add == "":
         if pretty_print:
@@ -108,5 +127,11 @@ def generate_signature(filename, file):
         rule = write_rule(rule_name, json_file)
         sig_file.write(rule)
 
+
+
+    # rule = write_rule(rule_name, json_file)
+
 if __name__ == '__main__':
-    generate_signature("d27fba341533dadddccb7af7a39ab450.json", open("json_files/d27fba341533dadddccb7af7a39ab450.json"))
+    # pass
+    generate_signature("dd2696c95810dce317587292d6c9a65e.json", open("json_files/dd2696c95810dce317587292d6c9a65e.json"))
+    # generate_sig_string()

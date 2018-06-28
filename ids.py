@@ -4,14 +4,21 @@ import signal
 import time
 
 import generator
-from definitions import execute, send_message, network_device_ids
+from definitions import execute, network_device_ids
+from send_to_attacker import send_data
 
 runs = 2
+
+
+def send_message(s: str):
+    send_data(s.encode())
+
 
 def time_send():
     times = []
     for i in range(0, runs):
         start = time.clock()
+        # send_message("BENCH")
         send_message("BENCH")
         end = time.clock()
         times.append(str(end-start))
@@ -39,11 +46,26 @@ def time_generate_file(filename, file_path):
 def start_bro():
     # return execute("sudo /usr/local/bro/bin/bro -b -i eth0 sigEventHandler.bro").pid
     return execute("sudo /usr/local/bro/bin/bro -b -i {} /home/boschma/Documents/ddosdbRuleGenerator/sigEventHandler.bro".format(network_device_ids)).pid
-
+    # return execute("sudo /usr/local/bro/bin/bro -b -i {} /home/pi/Documents/sigEventHandler.bro".format(network_device_ids)).pid
+# sudo /usr/local/bro/bin/bro -b -i enp0s25 /home/boschma/Documents/ddosdbRuleGenerator/sigEventHandler.bro
+# sudo /usr/local/bro/bin/bro -b -i lo /home/boschma/Documents/ddosdbRuleGenerator/sigEventHandlerDebug.bro
 
 def stop_bro(pid):
     os.killpg(os.getpgid(pid), signal.SIGTERM)
 
+
+def generate_all_sigs():
+    directory = os.fsencode("json_files/")
+
+    sig = ""
+    for f in os.listdir(directory):
+        filename = os.fsdecode(f)
+        # json_files.append((filename, "json_files/" + filename))
+        rule_name = "STOP" + filename[:4]
+        sig += generator.write_rule(rule_name, json.load(open("json_files/" + filename))) + "\n"
+
+    with open("sig.sig", "w") as sig_file:
+        sig_file.write(sig)
 
 # generate_signature("7bf0c3f9fff85d3fe81f71279d6ae73e.json", 'json_files/7bf0c3f9fff85d3fe81f71279d6ae73e.json')
 
@@ -77,9 +99,27 @@ if __name__ == '__main__':
             pid = start_bro()
             # Send start command of attack
             send_message("START"+fn[:4])
-            time.sleep(7)
+            time.sleep(15)
             # Kill bro
             stop_bro(pid)
+            # time.sleep(1)
+
+    #Entering next phase, receiving with all sigs present
+    print("STARTING NEXT PHASE")
+
+    # send_message("NEXT")
+    # generate_all_sigs()
+    # # handle attacks
+    # for fn, p in json_files:
+    #     for i in range(0, runs):
+    #         # start bro
+    #         pid = start_bro()
+    #         # Send start command of attack
+    #         send_message("START" + fn[:4])
+    #         time.sleep(7)
+    #         # Kill bro
+    #         stop_bro(pid)
+
 
     send_message("QUIT")
 
