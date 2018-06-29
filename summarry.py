@@ -22,6 +22,7 @@ for filename, path in json_files:
     elif protocol == "UDP":
         pass
     elif protocol == "TCP":
+        misc += "tcp\\_flags = {}".format(data["additional"]["tcp_flag"])
         pass
     elif protocol == "DNS":
         misc += "dns\\_query = {}".format(data["additional"]["dns_query"])

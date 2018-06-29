@@ -2,11 +2,8 @@ import os
 import signal
 import socket, subprocess, time
 
-from definitions import execute, target_ip, target_mac, network_device_attacker
+from definitions import execute, target_ip, target_mac, network_device_attacker, attacking_speed
 from send_to_attacker import attacker_ip
-
-# target_ip = "192.168.0.101"
-# target_mac = "b8:27:eb:a3:b2:b0"
 
 
 current_attack = ""
@@ -23,7 +20,7 @@ def rewrite_pcap(target_ip: str, target_mac: str, source_pcap: str):
             "--outfile=attack.pcap".format(target_ip=target_ip, target_mac=target_mac, pcap_file=source_pcap)).wait()
 
 
-def launch_attack(adapter, speed=1):
+def launch_attack(adapter, speed):
     return execute("sudo tcpreplay -i {adapter} --mbps={speed} attack.pcap".format(adapter=adapter, speed=speed)).pid
 # sudo tcpreplay -i enp0s25 --mbps=90 attack.pcap
 # sudo tcpreplay -i lo attack.pcap
@@ -47,7 +44,7 @@ def handle_input(con, data: str):
 
         # Start attack in new thread, return pid to stop attack once stop command received
         current_attack = prefix
-        current_attack_pid = launch_attack(network_device_attacker)
+        current_attack_pid = launch_attack(network_device_attacker, attacking_speed)
         start_attack = time.clock()
     elif data == "NEXT":
         next_phase = True

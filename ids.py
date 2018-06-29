@@ -7,7 +7,7 @@ import generator
 from definitions import execute, network_device_ids
 from send_to_attacker import send_data
 
-runs = 2
+runs = 10
 
 
 def send_message(s: str):
@@ -99,7 +99,7 @@ if __name__ == '__main__':
             pid = start_bro()
             # Send start command of attack
             send_message("START"+fn[:4])
-            time.sleep(15)
+            time.sleep(7)
             # Kill bro
             stop_bro(pid)
             # time.sleep(1)
@@ -107,18 +107,18 @@ if __name__ == '__main__':
     #Entering next phase, receiving with all sigs present
     print("STARTING NEXT PHASE")
 
-    # send_message("NEXT")
-    # generate_all_sigs()
-    # # handle attacks
-    # for fn, p in json_files:
-    #     for i in range(0, runs):
-    #         # start bro
-    #         pid = start_bro()
-    #         # Send start command of attack
-    #         send_message("START" + fn[:4])
-    #         time.sleep(7)
-    #         # Kill bro
-    #         stop_bro(pid)
+    send_message("NEXT")
+    generate_all_sigs()
+    # handle attacks
+    for fn, p in json_files:
+        for i in range(0, runs):
+            # start bro
+            pid = start_bro()
+            # Send start command of attack
+            send_message("START" + fn[:4])
+            time.sleep(7)
+            # Kill bro
+            stop_bro(pid)
 
 
     send_message("QUIT")
